@@ -29,7 +29,9 @@ export default function BottomNavigation({ state, descriptors, navigation }: any
             onPress={() => navigation.navigate(route.name)}
             style={styles.tab}
           >
-            {/* <Text style={[styles.icon, isFocused && styles.iconFocused]}>{icons[route.name]}</Text> */}
+            <Text style={[styles.icon, isFocused && styles.iconFocused]}>
+              {icons[route.name as keyof typeof icons]}
+            </Text>
             <Text style={[styles.label, isFocused && styles.labelFocused]}>{label}</Text>
           </TouchableOpacity>
         );
