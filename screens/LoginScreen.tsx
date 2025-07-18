@@ -2,10 +2,20 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) => {
+const LoginScreen = ({ onGetStartedPress, onLoginSuccess }: { onGetStartedPress?: () => void, onLoginSuccess?: () => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSignIn = () => {
+    if (email === 'admin' && password === 'admin') {
+      setError('');
+      onLoginSuccess && onLoginSuccess();
+    } else {
+      setError('Invalid username or password');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -56,10 +66,11 @@ const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) 
           end={{ x: 1, y: 0 }}
           style={styles.signInButtonGradient}
         >
-          <TouchableOpacity style={styles.signInButton}>
+          <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
             <Text style={styles.signInButtonText}>Sign in</Text>
           </TouchableOpacity>
         </LinearGradient>
+        {error ? <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text> : null}
         <TouchableOpacity>
           <Text style={styles.forgotPassword}>Forgot your password?</Text>
         </TouchableOpacity>
