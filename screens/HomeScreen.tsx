@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AddUserModal from './AddUserModal';
 
 const users = [
   { name: 'Jaxon Reed', role: 'Admin', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
@@ -15,6 +16,13 @@ const users = [
 ];
 
 export default function HomeScreen() {
+  const [showAddUserModal, setShowAddUserModal] = React.useState(false);
+
+  const handleAddUserSubmit = (data: any) => {
+    // You can handle the new user data here (e.g., add to users array or send to backend)
+    console.log('New user submitted:', data);
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -112,7 +120,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
       
-      <TouchableOpacity style={styles.addUserBtn}>
+      <TouchableOpacity style={styles.addUserBtn} onPress={() => setShowAddUserModal(true)}>
         <View style={styles.addUserBtnContent}>
           <Text style={styles.addUserBtnText}>AddUser Page</Text>
           <FontAwesome
@@ -123,6 +131,11 @@ export default function HomeScreen() {
           />
         </View>
       </TouchableOpacity>
+      <AddUserModal
+        visible={showAddUserModal}
+        onClose={() => setShowAddUserModal(false)}
+        onSubmit={handleAddUserSubmit}
+      />
     </View>
   );
 }
