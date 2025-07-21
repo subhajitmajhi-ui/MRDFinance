@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const icons = {
-  Main: '🏠',
-  Flow: '💲',
-  Add: '➕',
-  Discover: '🔍',
-  Me: '👤',
+  Main: 'home',
+  Flow: 'money',
+  Add: 'plus-circle',
+  Discover: 'search',
+  Me: 'user',
 };
 
 export default function BottomNavigation({ state, descriptors, navigation }: any) {
@@ -21,6 +22,7 @@ export default function BottomNavigation({ state, descriptors, navigation }: any
             ? options.title
             : route.name;
         const isFocused = state.index === index;
+        const iconName = icons[route.name as keyof typeof icons];
         return (
           <TouchableOpacity
             key={route.key}
@@ -29,9 +31,11 @@ export default function BottomNavigation({ state, descriptors, navigation }: any
             onPress={() => navigation.navigate(route.name)}
             style={styles.tab}
           >
-            <Text style={[styles.icon, isFocused && styles.iconFocused]}>
-              {icons[route.name as keyof typeof icons]}
-            </Text>
+            <FontAwesome
+              name={iconName}
+              size={24}
+              color={isFocused ? '#de9228' : '#888'}
+            />
             <Text style={[styles.label, isFocused && styles.labelFocused]}>{label}</Text>
           </TouchableOpacity>
         );
@@ -46,7 +50,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#eee',
-    height: 60,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'space-around',
     position: 'absolute',
@@ -57,23 +61,17 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
+    paddingBottom: 20,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    fontSize: 24,
-    color: '#888',
-  },
-  iconFocused: {
-    color: '#de9228',
-  },
   label: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#888',
-    marginTop: 2,
+    marginTop: 7,
   },
   labelFocused: {
     color: '#de9228',
