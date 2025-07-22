@@ -14,11 +14,12 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import HomeScreen from './screens/HomeScreen';
 import BottomNavigation from './components/BottomNavigation';
+import Drawer from './components/Drawer';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs() {
+export function MainTabs() {
   return (
     <Tab.Navigator tabBar={props => <BottomNavigation {...props} /> }>
       <Tab.Screen name="Main" component={HomeScreen} options={{ headerShown: false }} />
@@ -37,18 +38,16 @@ export default function App() {
   return (
     <NavigationContainer>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isLoggedIn ? (
-          <>
-            <Stack.Screen name="Login">
-              {props => <LoginScreen {...props} onLoginSuccess={() => setIsLoggedIn(true)} />}
-            </Stack.Screen>
-            <Stack.Screen name="Signup" component={SignupScreen} />
-          </>
-        ) : (
-          <Stack.Screen name="MainTabs" component={MainTabs} />
-        )}
-      </Stack.Navigator>
+      {!isLoggedIn ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login">
+            {props => <LoginScreen {...props} onLoginSuccess={() => setIsLoggedIn(true)} />}
+          </Stack.Screen>
+          <Stack.Screen name="Signup" component={SignupScreen} />
+        </Stack.Navigator>
+      ) : (
+        <Drawer />
+      )}
     </NavigationContainer>
   );
 }

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal } fr
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AddUserModal from './AddUserModal';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
 const users = [
   { name: 'Jaxon Reed', role: 'Admin', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
@@ -17,6 +19,15 @@ const users = [
 
 export default function HomeScreen() {
   const [showAddUserModal, setShowAddUserModal] = React.useState(false);
+  const navigation = useNavigation();
+  const openDrawer = () => {
+    const parent = navigation.getParent && navigation.getParent();
+    // @ts-ignore: openDrawer is available on Drawer parent
+    if (parent && parent.openDrawer) {
+      // @ts-ignore
+      parent.openDrawer();
+    }
+  };
 
   const handleAddUserSubmit = (data: any) => {
     // You can handle the new user data here (e.g., add to users array or send to backend)
@@ -33,7 +44,7 @@ export default function HomeScreen() {
       >
           <View style={styles.headerRow}>
             <Image source={{ uri: users[0].avatar }} style={styles.profilePic} />
-            <TouchableOpacity style={styles.switchBtn}>
+            <TouchableOpacity style={styles.switchBtn} onPress={openDrawer}>
               <Text style={styles.switchBtnText}>Switch Accountbook</Text>
               <Image source={require('../assets/icons/custom-down-arrow.png')} style={styles.downArrow} />
             </TouchableOpacity>
