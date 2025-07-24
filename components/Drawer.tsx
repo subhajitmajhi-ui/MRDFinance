@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { MainTabs } from '../App';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AddCashbookForm from '../screens/AddCashbookModal';
 
 const DrawerNav = createDrawerNavigator();
 
@@ -44,6 +45,11 @@ const cashbooks = [
 ];
 
 function DrawerContent() {
+  const [addCashbookVisible, setAddCashbookVisible] = useState(false);
+  const handleAddCashbookSubmit = () => {
+    // You can handle the submitted data here if needed
+    setAddCashbookVisible(false);
+  };
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#FAFAFA' }} contentContainerStyle={{ padding: 20, paddingTop: 50 }}>
       {/* User Profile Section */}
@@ -115,13 +121,16 @@ function DrawerContent() {
         </View>
       ))}
       {/* Add Cashbook */}
-      <TouchableOpacity style={styles.addCard}>
+      <TouchableOpacity style={styles.addCard} onPress={() => setAddCashbookVisible(v => !v)}>
         <Image source={require('../assets/icons/bank-green.png')} style={styles.addCardIcon} />
         <Text style={styles.addCardText}>Add Cashbook</Text>
         <Text style={styles.addCardPlus}>
           <FontAwesome name={'plus'} size={18} color={'#7F3DFF'} />
         </Text>
       </TouchableOpacity>
+      {addCashbookVisible && (
+        <AddCashbookForm onSubmit={handleAddCashbookSubmit} />
+      )}
     </ScrollView>
   );
 }
