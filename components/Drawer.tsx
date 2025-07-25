@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { MainTabs } from '../App';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -51,87 +51,97 @@ function DrawerContent() {
     setAddCashbookVisible(false);
   };
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#FAFAFA' }} contentContainerStyle={{ padding: 20, paddingTop: 50 }}>
-      {/* User Profile Section */}
-      <View style={styles.userRow}>
-        <Image source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} style={styles.avatar} />
-        <Text style={styles.userName}>Cody Rose</Text>
-        <TouchableOpacity style={styles.backBtn}>
-          <Text style={styles.backText}>Back</Text>
-          <Text style={styles.backArrow}>
-            <FontAwesome name={'chevron-right'} size={12} color={'#666666'} />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#FAFAFA' }}
+        contentContainerStyle={{ padding: 20, paddingTop: 50 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* User Profile Section */}
+        <View style={styles.userRow}>
+          <Image source={{ uri: 'https://randomuser.me/api/portraits/men/32.jpg' }} style={styles.avatar} />
+          <Text style={styles.userName}>Cody Rose</Text>
+          <TouchableOpacity style={styles.backBtn}>
+            <Text style={styles.backText}>Back</Text>
+            <Text style={styles.backArrow}>
+              <FontAwesome name={'chevron-right'} size={12} color={'#666666'} />
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.divider} />
+        {/* User Info Row */}
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoIcon}>
+            <FontAwesome name={'user-circle'} size={16} color={'#FF9900'} />
+            </Text>
+            <Text style={styles.infoText}>id. 25498785DS3</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoIcon}>
+              <MaterialCommunityIcons name={'email-variant'} size={16} color={'#FF9900'} />
+            </Text>
+            <Text style={styles.infoText}>info@finance.gmail.com</Text>
+          </View>
+        </View>
+        {/* Family Card */}
+        <View style={styles.familyCard}>
+          <Image source={require('../assets/icons/family.png')} style={styles.familyIcon} />
+          <Text style={styles.familyText}>Family</Text>
+          <Image source={require('../assets/icons/reload-icon.png')} style={styles.familyRefreshIcon} />
+        </View>
+        {/* All Cashbook Section */}
+        <Text style={styles.sectionTitle}>All Cashbook</Text>
+        {/* Debit Cards */}
+        <Text style={styles.subSectionTitle}>Debit Cards</Text>
+        {cashbooks.filter(c => c.type === 'debit').map((c, i) => (
+          <View key={i} style={[styles.card, { backgroundColor: c.bgColor }]}> 
+            <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: 50, marginRight: 20 }}>
+              <Image source={c.icon} style={styles.cardIcon} />
+              <Text style={[styles.cardBank, { textAlign: 'center', width: '100%' }]}>{c.bank}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>{c.name}</Text>
+              <Text style={styles.cardBalance}>Avl Balance:${c.balance}</Text>
+            </View>
+            {c.check && (
+              <Text style={styles.checkMark}>
+                <FontAwesome name={'check'} size={18} color={'#208e4e'} />
+              </Text>
+            )}
+          </View>
+        ))}
+        {/* Credit Cards */}
+        <Text style={styles.subSectionTitle}>Credit Cards</Text>
+        {cashbooks.filter(c => c.type === 'credit').map((c, i) => (
+          <View key={i} style={[styles.card, { backgroundColor: c.bgColor }]}> 
+            <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: 50, marginRight: 20 }}>
+              <Image source={c.icon} style={styles.cardIcon} />
+              <Text style={[styles.cardBank, { textAlign: 'center', width: '100%' }]}>{c.bank}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardTitle}>{c.name}</Text>
+              <Text style={styles.cardBalance}>Avl Balance:${c.balance}</Text>
+            </View>
+          </View>
+        ))}
+        {/* Add Cashbook */}
+        <TouchableOpacity style={styles.addCard} onPress={() => setAddCashbookVisible(v => !v)}>
+          <Image source={require('../assets/icons/bank-green.png')} style={styles.addCardIcon} />
+          <Text style={styles.addCardText}>Add Cashbook</Text>
+          <Text style={styles.addCardPlus}>
+            <FontAwesome name={'plus'} size={18} color={'#7F3DFF'} />
           </Text>
         </TouchableOpacity>
-      </View>
-      <View style={styles.divider} />
-      {/* User Info Row */}
-      <View style={styles.infoRow}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>
-          <FontAwesome name={'user-circle'} size={16} color={'#FF9900'} />
-          </Text>
-          <Text style={styles.infoText}>id. 25498785DS3</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>
-            <MaterialCommunityIcons name={'email-variant'} size={16} color={'#FF9900'} />
-          </Text>
-          <Text style={styles.infoText}>info@finance.gmail.com</Text>
-        </View>
-      </View>
-      {/* Family Card */}
-      <View style={styles.familyCard}>
-        <Image source={require('../assets/icons/family.png')} style={styles.familyIcon} />
-        <Text style={styles.familyText}>Family</Text>
-        <Image source={require('../assets/icons/reload-icon.png')} style={styles.familyRefreshIcon} />
-      </View>
-      {/* All Cashbook Section */}
-      <Text style={styles.sectionTitle}>All Cashbook</Text>
-      {/* Debit Cards */}
-      <Text style={styles.subSectionTitle}>Debit Cards</Text>
-      {cashbooks.filter(c => c.type === 'debit').map((c, i) => (
-        <View key={i} style={[styles.card, { backgroundColor: c.bgColor }]}> 
-          <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: 50, marginRight: 20 }}>
-            <Image source={c.icon} style={styles.cardIcon} />
-            <Text style={[styles.cardBank, { textAlign: 'center', width: '100%' }]}>{c.bank}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{c.name}</Text>
-            <Text style={styles.cardBalance}>Avl Balance:${c.balance}</Text>
-          </View>
-          {c.check && (
-            <Text style={styles.checkMark}>
-              <FontAwesome name={'check'} size={18} color={'#208e4e'} />
-            </Text>
-          )}
-        </View>
-      ))}
-      {/* Credit Cards */}
-      <Text style={styles.subSectionTitle}>Credit Cards</Text>
-      {cashbooks.filter(c => c.type === 'credit').map((c, i) => (
-        <View key={i} style={[styles.card, { backgroundColor: c.bgColor }]}> 
-          <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minWidth: 50, marginRight: 20 }}>
-            <Image source={c.icon} style={styles.cardIcon} />
-            <Text style={[styles.cardBank, { textAlign: 'center', width: '100%' }]}>{c.bank}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{c.name}</Text>
-            <Text style={styles.cardBalance}>Avl Balance:${c.balance}</Text>
-          </View>
-        </View>
-      ))}
-      {/* Add Cashbook */}
-      <TouchableOpacity style={styles.addCard} onPress={() => setAddCashbookVisible(v => !v)}>
-        <Image source={require('../assets/icons/bank-green.png')} style={styles.addCardIcon} />
-        <Text style={styles.addCardText}>Add Cashbook</Text>
-        <Text style={styles.addCardPlus}>
-          <FontAwesome name={'plus'} size={18} color={'#7F3DFF'} />
-        </Text>
-      </TouchableOpacity>
-      {addCashbookVisible && (
-        <AddCashbookForm onSubmit={handleAddCashbookSubmit} />
-      )}
-    </ScrollView>
+        {addCashbookVisible && (
+          <AddCashbookForm onSubmit={handleAddCashbookSubmit} />
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
