@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useAuth } from '../src/contexts/AuthContext';
 
-const LoginScreen = ({ onGetStartedPress, onLoginSuccess }: { onGetStartedPress?: () => void, onLoginSuccess?: () => void }) => {
-  const [email, setEmail] = useState('');
+const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) => {
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
 
-  const handleSignIn = () => {
-    if (email === 'admin' && password === 'admin') {
-      setError('');
-      onLoginSuccess && onLoginSuccess();
-    } else {
-      setError('Invalid username or password');
+  const handleSignIn = async () => {
+    if (!phone || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login({ phone, password });
+      // Login successful - AuthContext will handle the state
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message || 'An error occurred during login');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,12 +47,12 @@ const LoginScreen = ({ onGetStartedPress, onLoginSuccess }: { onGetStartedPress?
         <Text style={styles.subtitle}>Enter your details below</Text>
         <TextInput
           style={styles.input}
-          placeholder="Email Address"
+          placeholder="Phone Number"
           placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
           autoCapitalize="none"
-          keyboardType="email-address"
         />
         <View style={styles.passwordContainer}>
           <TextInput
@@ -66,11 +77,16 @@ const LoginScreen = ({ onGetStartedPress, onLoginSuccess }: { onGetStartedPress?
           end={{ x: 1, y: 0 }}
           style={styles.signInButtonGradient}
         >
-          <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-            <Text style={styles.signInButtonText}>Sign in</Text>
+          <TouchableOpacity 
+            style={[styles.signInButton, loading && styles.signInButtonDisabled]} 
+            onPress={handleSignIn}
+            disabled={loading}
+          >
+            <Text style={styles.signInButtonText}>
+              {loading ? 'Signing in...' : 'Sign in'}
+            </Text>
           </TouchableOpacity>
         </LinearGradient>
-        {error ? <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text> : null}
         <TouchableOpacity>
           <Text style={styles.forgotPassword}>Forgot your password?</Text>
         </TouchableOpacity>
@@ -100,7 +116,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f6fa',
   },
   topContainer: {
-    // backgroundColor: '#6C63FF', // remove solid color
     paddingTop: 80,
     paddingBottom: 70,
     alignItems: 'center',
@@ -133,7 +148,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'bold',
     marginTop: 50,
-    marginBottom: 40, // add space below the title
+    marginBottom: 40,
   },
   container: {
     backgroundColor: '#fff',
@@ -198,6 +213,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  signInButtonDisabled: {
+    opacity: 0.7,
   },
   forgotPassword: {
     color: '#de9228',
