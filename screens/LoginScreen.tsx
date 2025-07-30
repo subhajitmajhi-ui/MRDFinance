@@ -2,14 +2,23 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../src/contexts/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) => {
+// Define the stack param list for auth
+type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+};
+
+const LoginScreen = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const handleSignIn = async () => {
     if (!phone || !password) {
@@ -28,6 +37,10 @@ const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) 
     }
   };
 
+  const handleGetStarted = () => {
+    navigation.navigate('Signup');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient
@@ -37,7 +50,7 @@ const LoginScreen = ({ onGetStartedPress }: { onGetStartedPress?: () => void }) 
         end={{ x: 0.5, y: 1 }}
       >
         <Text style={styles.getStartedText}>Don&apos;t have an account?</Text>
-        <TouchableOpacity style={styles.getStartedButton} onPress={onGetStartedPress}>
+        <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
           <Text style={styles.getStartedButtonText}>Get Started</Text>
         </TouchableOpacity>
         <Text style={styles.title}>MRD Finance</Text>

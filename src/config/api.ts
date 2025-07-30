@@ -16,6 +16,13 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupRequest {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
 export interface LoginResponse {
   status: boolean;
   message: string;
@@ -26,6 +33,21 @@ export interface LoginResponse {
     phone: string;
     email: string;
     email_verified_at: string | null;
+    api_token: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface SignupResponse {
+  status: boolean;
+  message: string;
+  token: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
     api_token: string;
     created_at: string;
     updated_at: string;
@@ -125,6 +147,14 @@ class ApiService {
     });
   }
 
+  async signup(credentials: SignupRequest): Promise<ApiResponse<SignupResponse>> {
+    return this.request<SignupResponse>({
+      method: 'POST',
+      url: '/register',
+      data: credentials,
+    });
+  }
+
   async logout(): Promise<void> {
     await AsyncStorage.removeItem('auth_token');
     await AsyncStorage.removeItem('user_data');
@@ -142,4 +172,4 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
-export default apiService; 
+export default apiService;

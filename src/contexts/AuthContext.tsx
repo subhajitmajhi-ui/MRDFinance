@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiService, LoginRequest, LoginResponse } from '../config/api';
+import { apiService, LoginRequest, SignupRequest, LoginResponse, SignupResponse } from '../config/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   user: any | null;
   login: (credentials: LoginRequest) => Promise<boolean>;
+  signup: (credentials: SignupRequest) => Promise<boolean>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -72,6 +73,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signup = async (credentials: SignupRequest): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const response = await apiService.signup(credentials);
+      
+      if (response.status && response.token && response.user) {
+        await AsyncStorage.setItem('auth_token', response.token);
+        await AsyncStorage.setItem('user_data', JSON.stringify(response.user));
+        
+        setUser(response.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       await apiService.logout();
@@ -86,6 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated,
     user,
     login,
+    signup,
     logout,
     loading,
   };
@@ -95,4 +120,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};

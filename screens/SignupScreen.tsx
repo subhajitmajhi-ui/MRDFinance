@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { apiService } from '../src/config/api';
+
+// Define the stack param list for auth
+type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+};
 
 const getPasswordStrength = (password: string) => {
   if (password.length > 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
@@ -14,22 +23,65 @@ const getPasswordStrength = (password: string) => {
   }
 };
 
-const SignupScreen = ({ onSignInPress }: { onSignInPress?: () => void }) => {
+const SignupScreen = () => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const strength = getPasswordStrength(password);
+  
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const allFilled = email && name && password && phone;
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setSubmitted(true);
-    if (allFilled) {
-      // Proceed with signup logic
+    if (!allFilled) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
     }
+
+    try {
+      setLoading(true);
+      const response = await apiService.signup({ name, email, phone, password });
+      
+      if (response.status) {
+        // Signup successful - show success message and redirect to login
+        Alert.alert(
+          'Success!',
+          'Registration successful! Please login with your credentials.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Clear form data and navigate to login
+                setEmail('');
+                setName('');
+                setPassword('');
+                setPhone('');
+                setSubmitted(false);
+                navigation.navigate('Login');
+              }
+            }
+          ]
+        );
+      } else {
+        // Signup failed - show error message and stay on signup screen
+        Alert.alert('Registration Failed', response.message || 'An error occurred during registration');
+      }
+    } catch (error: any) {
+      // Network or other errors - show error message and stay on signup screen
+      Alert.alert('Registration Failed', error.message || 'An error occurred during registration');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignIn = () => {
+    navigation.navigate('Login');
   };
 
   return (
@@ -41,7 +93,7 @@ const SignupScreen = ({ onSignInPress }: { onSignInPress?: () => void }) => {
         end={{ x: 0.5, y: 1 }}
       >
         <Text style={styles.haveAccountText}>Already have an account?</Text>
-        <TouchableOpacity style={styles.signInButtonTop} onPress={onSignInPress}>
+        <TouchableOpacity style={styles.signInButtonTop} onPress={handleSignIn}>
           <Text style={styles.signInButtonTopText}>Sign in</Text>
         </TouchableOpacity>
         <Text style={styles.title}>MRD Finance</Text>
@@ -102,8 +154,14 @@ const SignupScreen = ({ onSignInPress }: { onSignInPress?: () => void }) => {
           onChangeText={setPhone}
           keyboardType="phone-pad"
         />
-        <TouchableOpacity style={[styles.signUpButton, !allFilled && styles.signUpButtonDisabled]} onPress={handleSignUp} disabled={!allFilled}>
-          <Text style={styles.signUpButtonText}>Sign up</Text>
+        <TouchableOpacity 
+          style={[styles.signUpButton, (!allFilled || loading) && styles.signUpButtonDisabled]} 
+          onPress={handleSignUp} 
+          disabled={!allFilled || loading}
+        >
+          <Text style={styles.signUpButtonText}>
+            {loading ? 'Creating account...' : 'Sign up'}
+          </Text>
         </TouchableOpacity>
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
@@ -303,4 +361,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignupScreen; 
+export default SignupScreen;
