@@ -16,13 +16,14 @@ import SignupScreen from './screens/SignupScreen';
 import HomeScreen from './screens/HomeScreen';
 import MeScreen from './screens/MeScreen';
 import BottomNavigation from './components/BottomNavigation';
+import Drawer from './components/Drawer';
 import LoadingScreen from './src/components/LoadingScreen';
 import { useAuth } from './src/contexts/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs() {
+export function MainTabs() {
   return (
     <Tab.Navigator tabBar={props => <BottomNavigation {...props} /> }>
       <Tab.Screen name="Main" component={HomeScreen} options={{ headerShown: false }} />
@@ -51,7 +52,7 @@ function AppContent() {
           <Stack.Screen name="Signup" component={SignupScreen} />
         </Stack.Navigator>
       ) : (
-        <MainTabs />
+        <Drawer />
       )}
     </>
   );

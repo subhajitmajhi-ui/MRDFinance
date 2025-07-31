@@ -19,14 +19,10 @@ const users = [
 
 export default function HomeScreen() {
   const [showAddUserModal, setShowAddUserModal] = React.useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<DrawerNavigationProp<any>>();
+
   const openDrawer = () => {
-    const parent = navigation.getParent && navigation.getParent();
-    // @ts-ignore: openDrawer is available on Drawer parent
-    if (parent && parent.openDrawer) {
-      // @ts-ignore
-      parent.openDrawer();
-    }
+    navigation.openDrawer();
   };
 
   const handleAddUserSubmit = (data: any) => {
