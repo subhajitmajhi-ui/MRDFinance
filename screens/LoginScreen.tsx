@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../src/contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import CustomPopup from '../src/components/CustomPopup';
+import Feather from 'react-native-vector-icons/Feather';
 
 // Define the stack param list for auth
 type AuthStackParamList = {
@@ -16,13 +18,29 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({
+    type: 'error',
+    title: '',
+    message: '',
+  });
   
   const { login } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
+  const showPopup = (type: 'success' | 'error', title: string, message: string) => {
+    console.log('Showing popup:', { type, title, message });
+    setPopupConfig({ type, title, message });
+    setPopupVisible(true);
+  };
+
   const handleSignIn = async () => {
     if (!phone || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup('error', 'Error', 'Please fill in all fields');
       return;
     }
 
@@ -31,10 +49,27 @@ const LoginScreen = () => {
       await login({ phone, password });
       // Login successful - AuthContext will handle the state
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'An error occurred during login');
+      console.log('Login error caught:', error);
+      // Handle different error structures
+      let errorMessage = 'An error occurred during login';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      console.log('Final error message:', errorMessage);
+      showPopup('error', 'Login Failed', errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePopupClose = () => {
+    setPopupVisible(false);
   };
 
   const handleGetStarted = () => {
@@ -81,7 +116,11 @@ const LoginScreen = () => {
             style={styles.eyeButton}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
+            <Feather 
+              name={showPassword ? 'eye-off' : 'eye'} 
+              size={20} 
+              color="#000" 
+            />
           </TouchableOpacity>
         </View>
         <LinearGradient
@@ -119,6 +158,16 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Custom Popup */}
+      <CustomPopup
+        visible={popupVisible}
+        type={popupConfig.type}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        buttonText="OK"
+        onClose={handlePopupClose}
+      />
     </SafeAreaView>
   );
 };

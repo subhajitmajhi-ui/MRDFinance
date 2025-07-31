@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService, LoginRequest, SignupRequest, LoginResponse, SignupResponse } from '../config/api';
+import CustomPopup from '../components/CustomPopup';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -29,6 +30,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({
+    type: 'error',
+    title: '',
+    message: '',
+  });
+
+  const showPopup = (type: 'success' | 'error', title: string, message: string) => {
+    console.log('Showing popup:', { type, title, message });
+    setPopupConfig({ type, title, message });
+    setPopupVisible(true);
+  };
+
+  const handlePopupClose = () => {
+    setPopupVisible(false);
+  };
 
   useEffect(() => {
     checkAuthStatus();
@@ -63,10 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsAuthenticated(true);
         return true;
       } else {
+        showPopup('error', 'Login Failed', response.message);
         throw new Error(response.message);
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      showPopup('error', 'Login Failed', error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -118,6 +140,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <CustomPopup
+        visible={popupVisible}
+        type={popupConfig.type}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        buttonText="OK"
+        onClose={handlePopupClose}
+      />
     </AuthContext.Provider>
   );
 };

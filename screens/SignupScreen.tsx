@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { apiService } from '../src/config/api';
+import CustomPopup from '../src/components/CustomPopup';
+import Feather from 'react-native-vector-icons/Feather';
 
 // Define the stack param list for auth
 type AuthStackParamList = {
@@ -31,16 +33,31 @@ const SignupScreen = () => {
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({
+    type: 'success',
+    title: '',
+    message: '',
+  });
   const strength = getPasswordStrength(password);
   
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const allFilled = email && name && password && phone;
 
+  const showPopup = (type: 'success' | 'error', title: string, message: string) => {
+    setPopupConfig({ type, title, message });
+    setPopupVisible(true);
+  };
+
   const handleSignUp = async () => {
     setSubmitted(true);
     if (!allFilled) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup('error', 'Error', 'Please fill in all fields');
       return;
     }
 
@@ -49,35 +66,36 @@ const SignupScreen = () => {
       const response = await apiService.signup({ name, email, phone, password });
       
       if (response.status) {
-        // Signup successful - show success message and redirect to login
-        Alert.alert(
-          'Success!',
-          'Registration successful! Please login with your credentials.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Clear form data and navigate to login
-                setEmail('');
-                setName('');
-                setPassword('');
-                setPhone('');
-                setSubmitted(false);
-                navigation.navigate('Login');
-              }
-            }
-          ]
+        // Signup successful - show success popup
+        showPopup(
+          'success',
+          'Congratulations!',
+          'Registration successful! Please login with your credentials.'
         );
       } else {
-        // Signup failed - show error message and stay on signup screen
-        Alert.alert('Registration Failed', response.message || 'An error occurred during registration');
+        // Signup failed - show error popup
+        showPopup('error', 'Registration Failed', response.message || 'An error occurred during registration');
       }
     } catch (error: any) {
-      // Network or other errors - show error message and stay on signup screen
-      Alert.alert('Registration Failed', error.message || 'An error occurred during registration');
+      // Network or other errors - show error popup
+      showPopup('error', 'Registration Failed', error.message || 'An error occurred during registration');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePopupClose = () => {
+    setPopupVisible(false);
+    if (popupConfig.type === 'success') {
+      // Clear form data and navigate to login on success
+      setEmail('');
+      setName('');
+      setPassword('');
+      setPhone('');
+      setSubmitted(false);
+      navigation.navigate('Login');
+    }
+    // On error, stay on signup screen with previous data
   };
 
   const handleSignIn = () => {
@@ -131,7 +149,11 @@ const SignupScreen = () => {
             style={styles.eyeButton}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
+            <Feather 
+              name={showPassword ? 'eye-off' : 'eye'} 
+              size={20} 
+              color="#000" 
+            />
           </TouchableOpacity>
           <View style={styles.strengthContainer}>
             {[1, 2, 3].map((i) => (
@@ -179,6 +201,16 @@ const SignupScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Custom Popup */}
+      <CustomPopup
+        visible={popupVisible}
+        type={popupConfig.type}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        buttonText="OK"
+        onClose={handlePopupClose}
+      />
     </SafeAreaView>
   );
 };

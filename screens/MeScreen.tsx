@@ -1,34 +1,52 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useAuth } from '../src/contexts/AuthContext';
+import CustomPopup from '../src/components/CustomPopup';
 
 const MeScreen = () => {
   const { user, logout } = useAuth();
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<{
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    type: 'info',
+    title: '',
+    message: '',
+  });
+
+  const showPopup = (type: 'success' | 'error' | 'info', title: string, message: string) => {
+    console.log('Showing popup:', { type, title, message });
+    setPopupConfig({ type, title, message });
+    setPopupVisible(true);
+  };
+
+  const handlePopupClose = () => {
+    setPopupVisible(false);
+  };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-            } catch (error) {
-              console.error('Logout error:', error);
-            }
-          },
-        },
-      ]
-    );
+    showPopup('info', 'Logout', 'Are you sure you want to logout?');
+  };
+
+  const handleLogoutConfirm = async () => {
+    try {
+      await logout();
+      showPopup('success', 'Success', 'You have been logged out successfully');
+    } catch (error: any) {
+      showPopup('error', 'Logout Failed', error.message || 'An error occurred during logout');
+    }
+  };
+
+  const handlePopupAction = () => {
+    if (popupConfig.type === 'info' && popupConfig.title === 'Logout') {
+      // This is the logout confirmation popup
+      handleLogoutConfirm();
+    }
+    setPopupVisible(false);
   };
 
   return (
@@ -99,6 +117,17 @@ const MeScreen = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Custom Popup */}
+      <CustomPopup
+        visible={popupVisible}
+        type={popupConfig.type}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        buttonText={popupConfig.type === 'info' ? 'Logout' : 'OK'}
+        onPress={popupConfig.type === 'info' ? handlePopupAction : undefined}
+        onClose={handlePopupClose}
+      />
     </SafeAreaView>
   );
 };
